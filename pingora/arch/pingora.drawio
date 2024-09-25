@@ -1,0 +1,96 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
+  <diagram name="Page-1" id="c4acf3e9-155e-7222-9cf6-157b1a14988f">
+    <mxGraphModel dx="1020" dy="504" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="17acba5748e5396b-20" value="Server" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=10;align=center;" parent="1" vertex="1">
+          <mxGeometry x="20" y="240" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="17acba5748e5396b-21" value="- services: type" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="17acba5748e5396b-20" vertex="1">
+          <mxGeometry y="26" width="160" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="17acba5748e5396b-24" value="- listen_fds: type" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="17acba5748e5396b-20" vertex="1">
+          <mxGeometry y="52" width="160" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="17acba5748e5396b-26" value="- shutdown_watch: type" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="17acba5748e5396b-20" vertex="1">
+          <mxGeometry y="78" width="160" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="8T91ty_S6h5k6b_i8To8-3" value="&amp;lt;&amp;lt;Trait&amp;gt;&amp;gt;&lt;br&gt;&lt;b&gt;Service&lt;/b&gt;" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="280" y="240" width="360" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="8T91ty_S6h5k6b_i8To8-4" value="&lt;div&gt;+ name(&amp;amp;self): &amp;amp;str&lt;br&gt;&lt;/div&gt;&lt;div&gt;+ threads(&amp;amp;self): Option&amp;lt;usize&amp;gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;+ async start_service(&amp;amp;mut self, fds: Option&amp;lt;ListenFds&amp;gt;,&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;mut shutdown: ShutdownWatch): ()&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" parent="8T91ty_S6h5k6b_i8To8-3" vertex="1">
+          <mxGeometry y="40" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="8T91ty_S6h5k6b_i8To8-6" value="&lt;p style=&quot;text-align: center; margin: 4px 0px 0px;&quot;&gt;&lt;span style=&quot;background-color: initial; text-align: left;&quot;&gt;&lt;b&gt;GenBackgroundService&amp;lt;T&lt;/b&gt;&lt;/span&gt;&lt;b style=&quot;background-color: initial; text-align: left;&quot;&gt;&amp;gt;&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;- name: String&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;- task: Arc&amp;lt;T: BackgroundService&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ threads: Option&amp;lt;usize&amp;gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ new(name: String, ): Self&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ task(&amp;amp;self): Arc&amp;lt;A&amp;gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="550" y="400" width="270" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="8T91ty_S6h5k6b_i8To8-8" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;entryX=0.365;entryY=1.094;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="pIjUMOdEu6vYX2SS_KWz-1" target="8T91ty_S6h5k6b_i8To8-4" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="360" y="399" as="sourcePoint" />
+            <mxPoint x="520" y="399" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="310" y="370" />
+              <mxPoint x="411" y="370" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="8T91ty_S6h5k6b_i8To8-10" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;entryX=0.636;entryY=1.083;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="8T91ty_S6h5k6b_i8To8-4" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="680" y="399" as="sourcePoint" />
+            <mxPoint x="840" y="399" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="380" />
+              <mxPoint x="560" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="8T91ty_S6h5k6b_i8To8-11" value="1" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=bottom;rounded=0;" parent="1" edge="1">
+          <mxGeometry x="-1" y="3" relative="1" as="geometry">
+            <mxPoint x="180" y="280" as="sourcePoint" />
+            <mxPoint x="280" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-1" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b style=&quot;text-align: left;&quot;&gt;listening::Service&amp;lt;T&lt;/b&gt;&lt;b style=&quot;background-color: initial; text-align: left;&quot;&gt;&amp;gt;&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin: 0px 0px 0px 4px;&quot;&gt;- name: String&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 4px;&quot;&gt;- listeners:&amp;nbsp;Listeners&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 4px;&quot;&gt;-&amp;nbsp;app_logic: Option&amp;lt;T: ServerApp&amp;gt;&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 4px;&quot;&gt;+ threads: Option&amp;lt;usize&amp;gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ new(name: String, ): Self&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+&amp;nbsp;add_tcp(&amp;amp;mut self, addr: &amp;amp;str): ()&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="170" y="400" width="280" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-2" value="&amp;lt;&amp;lt;Trait&amp;gt;&amp;gt;&lt;br&gt;&lt;b&gt;ServerApp&lt;/b&gt;" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="110" y="620" width="380" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-3" value="+ async process_new( self: &amp;amp;Arc&amp;lt;Self&amp;gt;, mut session: Stream, &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;shutdown: &amp;amp;ShutdownWatch): Option&amp;lt;Stream&amp;gt;;&lt;div&gt;+ async&amp;nbsp;cleanup(&amp;amp;self): ()&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" parent="pIjUMOdEu6vYX2SS_KWz-2" vertex="1">
+          <mxGeometry y="40" width="380" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-6" value="&amp;lt;&amp;lt;Trait&amp;gt;&amp;gt;&lt;br&gt;&lt;b&gt;apps::HttpServerApp&lt;/b&gt;" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="110" y="759" width="420" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-7" value="+&amp;nbsp;async process_new_http(self: &amp;amp;Arc&amp;lt;Self&amp;gt;, mut session: &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;ServerSession, &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;shutdown: &amp;amp;ShutdownWatch) -&amp;gt; Option&amp;lt;Stream&amp;gt;&lt;div&gt;+&amp;nbsp;h2_options(&amp;amp;self):&amp;nbsp;Option&amp;lt;server::H2Options&amp;gt;&lt;/div&gt;&lt;div&gt;+ server_options(&amp;amp;self):&amp;nbsp;Option&amp;lt;&amp;amp;HttpServerOptions&amp;gt;&lt;/div&gt;&lt;div&gt;+&amp;nbsp;async http_cleanup(&amp;amp;self): ()&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" parent="pIjUMOdEu6vYX2SS_KWz-6" vertex="1">
+          <mxGeometry y="40" width="420" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-8" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.553;entryY=0.994;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="pIjUMOdEu6vYX2SS_KWz-6" target="pIjUMOdEu6vYX2SS_KWz-3" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="160" y="760" as="sourcePoint" />
+            <mxPoint x="318" y="722" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-9" value="&amp;lt;&amp;lt;Trait&amp;gt;&amp;gt;&lt;br&gt;&lt;b&gt;apps::http_app::ServeHttp&lt;/b&gt;" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="135" y="920" width="370" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-10" value="+&amp;nbsp;async response(&amp;amp;self, http_session: &amp;amp;mut ServerSession): &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Response&amp;lt;Vec&amp;lt;u8&amp;gt;&amp;gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" parent="pIjUMOdEu6vYX2SS_KWz-9" vertex="1">
+          <mxGeometry y="40" width="370" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pIjUMOdEu6vYX2SS_KWz-11" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.553;entryY=0.994;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="319.5" y="918" as="sourcePoint" />
+            <mxPoint x="319.5" y="879" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9A0DbeiUamfnDFkeGNF3-1" value="&amp;lt;&amp;lt;Trait&amp;gt;&amp;gt;&lt;br&gt;&lt;b&gt;BackgroundService&lt;/b&gt;" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="530" y="620" width="380" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="9A0DbeiUamfnDFkeGNF3-2" value="&lt;div&gt;+ async fn start(&amp;amp;self, mut shutdown: ShutdownWatch): ()&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" vertex="1" parent="9A0DbeiUamfnDFkeGNF3-1">
+          <mxGeometry y="40" width="380" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
