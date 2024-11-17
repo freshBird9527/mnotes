@@ -8,52 +8,52 @@
 services:
   db:
     image: mariadb:10.11
-    restart: always
     command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    restart: always
     volumes:
-      - ./db:/var/lib/mysql
+      - ./db:/var/lib/mysql:Z
     environment:
-      - MYSQL_ROOT_PASSWORD=db-password
-      - MYSQL_PASSWORD=db-password
+      - MYSQL_ROOT_PASSWORD=mysql-password
+      - MYSQL_PASSWORD=mysql-password
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_DISABLE_UPGRADE_BACKUP=1
 
   redis:
     image: redis:alpine
     restart: always
 
   app:
-    image: nextcloud:fpm
-    restart: always
-    depends_on:
-      - redis
-      - db
-    volumes:
-      - /mnt/pext4/nextcloud:/var/www/html
-    environment:
-      - MYSQL_PASSWORD=db-password
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-      - MYSQL_HOST=db
-
-  web:
-    image: nginx
+    image: nextcloud:apache
     restart: always
     ports:
-      - 8080:80
-    depends_on:
-      - app
+      - 0.0.0.0:8080:80
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    volumes_from:
-      - app
+      - ./nextcloud:/var/www/html:z
+      - /mnt/pext4/nextcloud/data:/var/www/html/data:z
+    environment:
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+      - MYSQL_PASSWORD=mysql-password
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    depends_on:
+      - db
+      - redis
+
+  cron:
+    image: nextcloud:apache
+    restart: always
+    volumes:
+      - ./nextcloud:/var/www/html:z
+      - /mnt/pext4/nextcloud/data:/var/www/html/data:z
+    entrypoint: /cron.sh
+    depends_on:
+      - db
+      - redis
 ```
 
-### nginx.conf:
-
-```
-https://github.com/nextcloud/docker/blob/master/.examples/docker-compose/with-nginx-proxy/mariadb/fpm/web/nginx.conf
-```
 
 ## samba:
 
