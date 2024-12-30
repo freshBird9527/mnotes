@@ -395,7 +395,7 @@ ngx_http_process_request(ngx_http_request_t *r)
 
     c->read->handler = ngx_http_request_handler;
     c->write->handler = ngx_http_request_handler;
-    r->read_event_handler = ngx_http_block_reading; // 在linux上是空操作
+    r->read_event_handler = ngx_http_block_reading; // 在linux上是空操作，因此即使body到了也不从sock中读取
 
     ngx_http_handler(r);
 }
