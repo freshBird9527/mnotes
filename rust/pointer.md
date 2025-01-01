@@ -1,0 +1,2 @@
+A struct where a field takes a reference on &self is called a self-referential struct and there is no way to represent that in Rust since the lifetime of the self-reference is impossible to express.
+The solution is to cast the &mut self-reference to a pointer instead and ensure that we manage the lifetimes correctly ourselves.
