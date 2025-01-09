@@ -130,7 +130,7 @@ ngx_http_init_phase_handlers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf)
             checker = ngx_http_core_content_phase;
             break;
 
-        /* NGX_HTTP_POST_READ_PHASE */
+        /* NGX_HTTP_POST_READ_PHASE, NGX_HTTP_PREACCESS_PHASE, NGX_HTTP_PRECONTENT_PHASE */
         default:
             checker = ngx_http_core_generic_phase;
         }
@@ -512,3 +512,233 @@ ngx_http_core_find_config_phase(ngx_http_request_t *r,
     return NGX_AGAIN;
 }
 ```
+
+### NGX_HTTP_REWRITE_PHASE
+
+* 与 `NGX_HTTP_SERVER_REWRITE_PHASE` 类似;
+* 但该阶段作用于命中location后，而`NGX_HTTP_SERVER_REWRITE_PHASE`作用于server;
+* 有的模块会在这两个阶段都注册handler，如lua-nginx 模块;
+
+
+### NGX_HTTP_POST_REWRITE_PHASE
+
+* 如果URI被修改了，当前请求将被重定向到新的location;
+* 从下面的checker看:
+  * uri未发生变化时直接执行下一个阶段 `NGX_HTTP_PREACCESS_PHASE`;
+  * 如果uri_changes 为0, 即达到最大的重定向次数时则返回500;
+  * 需要重定向时再次回到 `NGX_HTTP_FIND_CONFIG_PHASE`阶段;
+  * 该阶段不会执行ph的handler，因此模块不能介入该阶段;
+
+```c
+ngx_int_t
+ngx_http_core_post_rewrite_phase(ngx_http_request_t *r,
+    ngx_http_phase_handler_t *ph)
+{
+    ngx_http_core_srv_conf_t  *cscf;
+
+    if (!r->uri_changed) {
+        r->phase_handler++;
+        return NGX_AGAIN;
+    }
+
+    r->uri_changes--;
+
+    if (r->uri_changes == 0) {
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                      "rewrite or internal redirection cycle "
+                      "while processing \"%V\"", &r->uri);
+
+        ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+        return NGX_OK;
+    }
+
+    r->phase_handler = ph->next; // ph->next == find_config_index
+
+    cscf = ngx_http_get_module_srv_conf(r, ngx_http_core_module);
+    r->loc_conf = cscf->ctx->loc_conf;
+
+    return NGX_AGAIN;
+}
+```
+
+
+### NGX_HTTP_PREACCESS_PHASE
+
+* `ngx_http_limit_req_module`、`ngx_http_limit_conn_module` 、`ngx_http_realip_module`和`ngx_http_degradation_module` 会介入该阶段；
+* checker 为`ngx_http_core_generic_phase`, handler 不同的返回值有不同的含义；
+
+### NGX_HTTP_ACCESS_PHASE
+
+* 该阶段默认注册了`ngx_http_access_handler` 和 `ngx_http_auth_basic_handler`;
+
+* 从checker 为 `ngx_http_core_access_phase`包含如下逻辑：
+  * 非主请求(子请求)直接跳过该阶段；
+  * handler 返回`NGX_DECLINED`时继续执行该阶段的下一个handler;
+  * handler 返回`NGX_AGAIN` 或 `NGX_DONE`时结束当前事件的处理，下一次事件触发继续执行该handler;
+  * 如果satisfy 设置为all, 则当前handler返回`NGX_OK`时会继续执行下一个handler(即所有handler都需要pass);
+  * 如果satisfy 设置为any（默认时all）, 则当前handler返回`NGX_OK`时会跳过当前阶段进入下一个阶段 `NGX_HTTP_POST_ACCESS_PHASE`;
+
+```c
+ngx_int_t
+ngx_http_core_access_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
+{
+    ngx_int_t                  rc;
+    ngx_http_core_loc_conf_t  *clcf;
+
+    if (r != r->main) {
+        r->phase_handler = ph->next;
+        return NGX_AGAIN;
+    }
+
+    rc = ph->handler(r);
+
+    if (rc == NGX_DECLINED) {
+        r->phase_handler++;
+        return NGX_AGAIN;
+    }
+
+    if (rc == NGX_AGAIN || rc == NGX_DONE) {
+        return NGX_OK;
+    }
+
+    clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+    if (clcf->satisfy == NGX_HTTP_SATISFY_ALL) {
+
+        if (rc == NGX_OK) {
+            r->phase_handler++;
+            return NGX_AGAIN;
+        }
+
+    } else {
+        if (rc == NGX_OK) {
+            r->access_code = 0;
+
+            if (r->headers_out.www_authenticate) {
+                r->headers_out.www_authenticate->hash = 0;
+            }
+
+            r->phase_handler = ph->next; // 直接进入 NGX_HTTP_PRECONTENT_PHASE
+            return NGX_AGAIN;
+        }
+
+        if (rc == NGX_HTTP_FORBIDDEN || rc == NGX_HTTP_UNAUTHORIZED) {
+            if (r->access_code != NGX_HTTP_UNAUTHORIZED) {
+                r->access_code = rc;
+            }
+
+            r->phase_handler++;
+            return NGX_AGAIN;
+        }
+    }
+
+    /* rc == NGX_ERROR || rc == NGX_HTTP_...  */
+
+    if (rc == NGX_HTTP_UNAUTHORIZED) {
+        // 避免暴力破解，添加写事件超时，由指令 auth_delay设置 
+        return ngx_http_core_auth_delay(r);
+    }
+
+    ngx_http_finalize_request(r, rc);
+    return NGX_OK;
+}
+```
+
+### NGX_HTTP_POST_ACCESS_PHASE
+* Special phase where the satisfy any directive is processed. If some access phase handlers denied access and none explicitly allowed it, the request is finalized. 
+
+```c
+ngx_int_t
+ngx_http_core_post_access_phase(ngx_http_request_t *r,
+    ngx_http_phase_handler_t *ph)
+{
+    ngx_int_t  access_code;
+
+    access_code = r->access_code;
+
+    if (access_code) {
+        r->access_code = 0;
+
+        if (access_code == NGX_HTTP_FORBIDDEN) {
+            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                          "access forbidden by rule");
+        }
+
+        if (access_code == NGX_HTTP_UNAUTHORIZED) {
+            return ngx_http_core_auth_delay(r);
+        }
+
+        ngx_http_finalize_request(r, access_code);
+        return NGX_OK;
+    }
+
+    r->phase_handler++;
+    return NGX_AGAIN;
+}
+```
+
+
+### NGX_HTTP_PRECONTENT_PHASE
+* Phase for handlers to be called prior to generating content. 
+* ngx_http_mirror_module 会在该阶段介入;
+
+
+### NGX_HTTP_CONTENT_PHASE
+* 当配置有 `proxy_pass`指令时, clcf->handler = ngx_http_proxy_handler;
+    * 找到对应的location时执行，if (clcf->handler) { r->content_handler = clcf->handler;}
+    * 该checker如下，直接执行`ngx_http_finalize_request(r, r->content_handler(r))` 而不会执行对应的handler; 
+
+```c
+ngx_int_t
+ngx_http_core_content_phase(ngx_http_request_t *r,
+    ngx_http_phase_handler_t *ph)
+{
+    size_t     root;
+    ngx_int_t  rc;
+    ngx_str_t  path;
+
+    if (r->content_handler) {
+        r->write_event_handler = ngx_http_request_empty_handler;
+        ngx_http_finalize_request(r, r->content_handler(r));
+        return NGX_OK;
+    }
+
+    rc = ph->handler(r);
+
+    if (rc != NGX_DECLINED) {
+        ngx_http_finalize_request(r, rc);
+        return NGX_OK;
+    }
+
+    /* rc == NGX_DECLINED */
+
+    ph++;
+
+    if (ph->checker) {
+        r->phase_handler++;
+        return NGX_AGAIN;
+    }
+
+    /* no content handler was found */
+
+    if (r->uri.data[r->uri.len - 1] == '/') {
+
+        if (ngx_http_map_uri_to_path(r, &path, &root, 0) != NULL) {
+            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                          "directory index of \"%s\" is forbidden", path.data);
+        }
+
+        ngx_http_finalize_request(r, NGX_HTTP_FORBIDDEN);
+        return NGX_OK;
+    }
+
+    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "no handler found");
+
+    ngx_http_finalize_request(r, NGX_HTTP_NOT_FOUND);
+    return NGX_OK;
+}
+```
+
+## Note
+
+* 上面的11个阶段并没有包含header_filter 和 body_filter;
