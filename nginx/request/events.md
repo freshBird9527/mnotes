@@ -108,7 +108,7 @@ ngx_http_wait_request_handler(ngx_event_t *rev)
 
     ngx_reusable_connection(c, 0);
 
-    // 创建request
+    // 创建request且设置r->count == 1
     c->data = ngx_http_create_request(c);
     rev->handler = ngx_http_process_request_line;
     ngx_http_process_request_line(rev);

@@ -687,6 +687,7 @@ ngx_http_core_post_access_phase(ngx_http_request_t *r,
 * 当配置有 `proxy_pass`指令时, clcf->handler = ngx_http_proxy_handler;
     * 找到对应的location时执行，if (clcf->handler) { r->content_handler = clcf->handler;}
     * 该checker如下，直接执行`ngx_http_finalize_request(r, r->content_handler(r))` 而不会执行对应的handler; 
+    * 结束当前事件的处理，因为返回了NGX_OK，此时r->connection->read->handler == ngx_http_request_handler，r->connection->read->handler == ngx_http_request_handler, r->read_event_handler == ngx_http_read_client_request_body_handler, r->write_event_handler == ngx_http_request_empty_handler;
 
 ```c
 ngx_int_t
