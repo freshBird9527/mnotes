@@ -1,0 +1,120 @@
+# SSL
+
+## build
+```
+./configure --prefix=/home/lighthouse/work/online/openresty --with-debug --with-cc-opt="-O0" --with-http_v2_module \
+    --with-openssl=/home/lighthouse/work/online/openssl-3.0.13 --with-openssl-opt="-g -O0 enable-weak-ssl-ciphers" -j4
+```
+
+## key log
+* nginx-1.21.4/src/event/ngx_event_openssl.c中增加如下内容：
+```c
+static void ngx_ssl_keylog_callback(const ngx_ssl_conn_t *ssl_conn, const char *line);
+
+
+ngx_int_t
+ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
+{
+    /* ...... */
+    SSL_CTX_set_info_callback(ssl->ctx, ngx_ssl_info_callback);
+    SSL_CTX_set_keylog_callback(ssl->ctx, ngx_ssl_keylog_callback);
+
+    return NGX_OK;
+}
+
+
+static void
+ngx_ssl_keylog_callback(const ngx_ssl_conn_t *ssl_conn, const char *line)
+{
+    ngx_connection_t  *c;
+
+    c = ngx_ssl_get_connection((ngx_ssl_conn_t *) ssl_conn);
+    ngx_log_error(NGX_LOG_ERR, c->log, 0, "ssl keylog secret '%s'", line);
+}
+```
+
+ngx_ssl_connection_t
+c->ssl->ngx_ssl_conn_t
+struct ngx_ssl_connection_s {
+    ngx_ssl_conn_t             *connection;
+    SSL_CTX                    *session_ctx;
+}
+
+p c->ssl->connection->server_app_traffic_secret
+p c->ssl->connection->server_app_traffic_secret
+p c->ssl->connection->server_app_traffic_secret
+
+
+ngx_ssl_handshake 返回NGX_OK时握手完成
+
+
+(gdb) x/48xb c->ssl->connection->client_app_traffic_secret
+0x63ec1f974794:	0xd1	0xd8	0x7a	0xe7	0x08	0x04	0x28	0x6c
+0x63ec1f97479c:	0x7b	0xd4	0x2d	0xc6	0x72	0x52	0x60	0x62
+0x63ec1f9747a4:	0x1a	0xf0	0x0f	0xd0	0x0a	0x0c	0xe0	0x62
+0x63ec1f9747ac:	0xdb	0x19	0x3f	0xd9	0x14	0xf8	0xc7	0x59
+0x63ec1f9747b4:	0xf9	0x36	0x97	0xf0	0x44	0x28	0x20	0x85
+0x63ec1f9747bc:	0xe2	0x5a	0xad	0xd8	0x66	0x14	0xee	0x77
+(gdb) x/48xb c->ssl->connection->server_app_traffic_secret 
+0x63ec1f9747d4:	0x08	0x73	0x94	0x53	0x6c	0xb4	0x2d	0x78
+0x63ec1f9747dc:	0x2d	0x24	0x66	0x12	0x34	0xf7	0x5e	0xb2
+0x63ec1f9747e4:	0x43	0xf6	0x4f	0x3c	0xfe	0x32	0xa5	0xfe
+0x63ec1f9747ec:	0x6f	0xa6	0x1f	0x34	0xb8	0x91	0x54	0x1e
+0x63ec1f9747f4:	0x4b	0xb3	0x82	0xbb	0x2d	0xc4	0xca	0x03
+0x63ec1f9747fc:	0xc8	0xb9	0x02	0x38	0x17	0x97	0x39	0xfb
+(gdb) x/48xb c->ssl->connection->exporter_master_secret
+0x63ec1f974814:	0x5e	0xd4	0x87	0x95	0x10	0xd2	0x08	0x82
+0x63ec1f97481c:	0x70	0xc9	0xb8	0x3e	0x4f	0x6c	0xe6	0x1c
+0x63ec1f974824:	0xff	0xb6	0xb9	0xcf	0xd3	0x22	0x67	0x3a
+0x63ec1f97482c:	0x69	0x77	0xa5	0xc1	0xe9	0xbf	0x0e	0x6b
+0x63ec1f974834:	0xe3	0x05	0xea	0x68	0x89	0x6a	0x24	0x37
+0x63ec1f97483c:	0x59	0x79	0x12	0xe2	0xa5	0x74	0x97	0xf1
+(gdb) x/48xb c->ssl->connection->server_finished_secret
+0x63ec1f9746d4:	0x07	0xd0	0x4a	0x96	0xc8	0xc8	0x0c	0x46
+0x63ec1f9746dc:	0x10	0x18	0xc0	0x86	0x3f	0x4e	0xe0	0x7a
+0x63ec1f9746e4:	0x7b	0x69	0xac	0xce	0x29	0xf5	0x59	0xa0
+0x63ec1f9746ec:	0x1c	0x6a	0x16	0xde	0x2b	0x32	0x21	0x84
+0x63ec1f9746f4:	0xe4	0xfd	0xd6	0x4d	0x5a	0xaf	0x8f	0x56
+0x63ec1f9746fc:	0x78	0x93	0x69	0x9c	0x58	0x44	0xdd	0x15
+(gdb) x/48xb c->ssl->connection->client_finished_secret
+0x63ec1f974694:	0x68	0xf9	0x7d	0xc9	0x64	0x30	0x6b	0x36
+0x63ec1f97469c:	0xc5	0xc1	0x8e	0x97	0xe7	0x53	0xfd	0x30
+0x63ec1f9746a4:	0xaa	0x5d	0x63	0xa6	0x1e	0x08	0xce	0x46
+0x63ec1f9746ac:	0x5c	0x9a	0x05	0x34	0x17	0x2d	0xd1	0xb1
+0x63ec1f9746b4:	0x2e	0x88	0x90	0x51	0x7d	0xac	0x79	0xcf
+0x63ec1f9746bc:	0xb9	0x3f	0x62	0x41	0xf5	0xc3	0xdc	0x7e
+
+
+// CLIENT_TRAFFIC_SECRET_0
+(gdb) x/48xb c->ssl->connection->client_app_traffic_secret
+
+// SERVER_TRAFFIC_SECRET_0
+(gdb) x/48xb c->ssl->connection->server_app_traffic_secret
+
+// EXPORTER_SECRET
+(gdb) x/48xb c->ssl->connection->exporter_master_secret  
+
+client_app_traffic_secret
+
+
+handshake_traffic_hash
+
+ssl_log_secret
+
+
+
+## 待HKDF
+```shell
+SERVER_HANDSHAKE_TRAFFIC_SECRET 12e50fd917deae25c65ac34f449fe4907a37f356ebde1f7d37bc155cf722dd54 fceb7fbc043a6c109e24f11c66ddbf264bb394fb8b9c9250bc71f2fa5ce7eb33bdfff4cb5062a92eca3987bfbdcd8db3
+CLIENT_HANDSHAKE_TRAFFIC_SECRET 12e50fd917deae25c65ac34f449fe4907a37f356ebde1f7d37bc155cf722dd54 80f0223f73b45ec0f2b1923b716bca80772c20f2ca2f4512cc71dcf95cc1dd01e6a8849eddb01a59ee0e1f2604f7b2dd
+EXPORTER_SECRET 12e50fd917deae25c65ac34f449fe4907a37f356ebde1f7d37bc155cf722dd54 39fe37b09a006cf74eb8f4809dac4f4b531135e25356614bf5de6ed10e6e9f27a87c76a0ec870fad53958f6b1c94a688
+SERVER_TRAFFIC_SECRET_0 12e50fd917deae25c65ac34f449fe4907a37f356ebde1f7d37bc155cf722dd54 8c6edd1b584f7f84b066432c0808b94064d1baf889a081b4ea996bc33414aff721915db68cd8d9207ef9c06a00c8e7cf
+CLIENT_TRAFFIC_SECRET_0 12e50fd917deae25c65ac34f449fe4907a37f356ebde1f7d37bc155cf722dd54 540e9016213deef83793dc34ead0a391e296c7fd0105bc7a07a11e00c7f2c36957b6922f316dff008cad28a91d0f2376
+
+CLIENT_RANDOM: 12e50fd917deae25c65ac34f449fe4907a37f356ebde1f7d37bc155cf722dd54;
+HANDSHAKE_SECRET: 08a4f658e461932a7a6ecadca5ade692643003cafb627cbf9eacbbd67065ef829efc34934471aff6d673423357bc7cfa00000000000000000000000000000000;
+HANDSHAKE_TRAFFIC_HASH: 5b382ea5fd9ed71bbf56964bf3d55bc8c597cc3d25b18775a323738dbfe9bc07a94c6afb563236ff701ad24d60f9cff900000000000000000000000000000000;
+CLIENT_TRAFFIC_SECRET_0: 540e9016213deef83793dc34ead0a391e296c7fd0105bc7a07a11e00c7f2c36957b6922f316dff008cad28a91d0f237600000000000000000000000000000000;
+SERVER_TRAFFIC_SECRET_0: 8c6edd1b584f7f84b066432c0808b94064d1baf889a081b4ea996bc33414aff721915db68cd8d9207ef9c06a00c8e7cf00000000000000000000000000000000;
+EXPORTER_SECRET: 39fe37b09a006cf74eb8f4809dac4f4b531135e25356614bf5de6ed10e6e9f27a87c76a0ec870fad53958f6b1c94a68800000000000000000000000000000000;
+```
